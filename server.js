@@ -1,5 +1,8 @@
 const express = require('express');
 const bodyParser = require('body-parser');
+const mongoose = require('mongoose');
+
+// routes
 const placesRoutes = require('./routes/places-routes');
 const usersRoutes = require('./routes/users-routes');
 
@@ -24,6 +27,13 @@ app.use((error, req, res, next) =>{
     res.json({message: error.message || 'An unknown error occured!'});
 });
 
-app.listen(5000, ()=>{
-    console.log('Server Running On Port 5000');
-});
+mongoose.
+    connect('mongodb+srv://Jawad:cout<<Mongodb20@4ustin-cluster.cdmdgjq.mongodb.net/places?retryWrites=true&w=majority')
+    .then(() =>{
+        app.listen(5000, ()=>{
+            console.log('Server Running On Port 5000 Connected to MondoDB');
+        });
+    })
+    .catch(err =>{
+        console.log(err)
+    });
