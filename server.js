@@ -2,15 +2,20 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 
+const dotenv = require('dotenv');
+dotenv.config();
+
 // routes
-const favoritePlacesRoutes = require('./routes/favoritePlaces-routes');
-const usersRoutes = require('./routes/users-routes');
+const PlacesRoutes = require('./routes/places-routes');
+const UsersRoutes = require('./routes/users-routes');
+const UserFavoritePlaces = require('./routes/userFavoritePlaces-routes');
 
 const app = express();
 app.use(bodyParser.json());
 
-app.use('/api/places' ,favoritePlacesRoutes);
-app.use('/api/users', usersRoutes);
+app.use('/api/places' ,PlacesRoutes);
+app.use('/api/users', UsersRoutes);
+app.use('/api/userFavoritePlaces', UserFavoritePlaces);
 
 
 // if a route is not found then throw this error
@@ -27,13 +32,13 @@ app.use((error, req, res, next) =>{
     res.json({message: error.message || 'An unknown error occured!'});
 });
 
-mongoose.
-    connect('mongodb+srv://Jawad:cout<<Mongodb20@4ustin-cluster.cdmdgjq.mongodb.net/places?retryWrites=true&w=majority')
-    .then(() =>{
-        app.listen(5000, ()=>{
-            console.log('Server Running On Port 5000 Connected to MondoDB');
-        });
+const url = process.env.mongodbConnectionString;
+const PORT = 5000;
+mongoose
+    .connect(url, 
+        { useNewUrlParser: true, useUnifiedTopology: true }
+    )
+    .then(() => {
+        app.listen(PORT, () => console.log("Server up and running, Connected to DB"));
     })
-    .catch(err =>{
-        console.log(err)
-    });
+    .catch((error) => console.log(error))
