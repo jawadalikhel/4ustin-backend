@@ -4,8 +4,8 @@ const Schema = mongoose.Schema;
 
 const placesSchema = new Schema({
     location: {
-        lat: {type: String},
-        lon: {type: String}
+        lat: {type: Number},
+        lon: {type: Number}
     },
     queryFor: {type: String},
     cityName: {type: String}

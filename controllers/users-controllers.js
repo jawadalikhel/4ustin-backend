@@ -3,7 +3,6 @@ const uuid =  require('uuid');
 const HttpError = require('../models/http-error')
 
 const User = require('../models/user');
-const user = require('../models/user');
 
 const DUMMY_USERS = [
     {

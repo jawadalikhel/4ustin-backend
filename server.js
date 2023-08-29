@@ -14,8 +14,8 @@ const app = express();
 app.use(bodyParser.json());
 
 app.use('/api/places' ,PlacesRoutes);
-app.use('/api/users', UsersRoutes);
-app.use('/api/userFavoritePlaces', UserFavoritePlaces);
+app.use('/api/users-auth', UsersRoutes);
+app.use('/api/favorites', UserFavoritePlaces);
 
 
 // if a route is not found then throw this error
