@@ -3,7 +3,7 @@ const userFavoritePlacesController = require('../controllers/userFavoritePlaces-
 
 const router = express.Router();
 
-router.post('/user/addToFavorites', userFavoritePlacesController.createFavoritePlace);
+router.post('/user/addToFavorites', userFavoritePlacesController.addFavoritePlace);
 
 router.get('/user/userFavoritePlaces/:uid', userFavoritePlacesController.getFavoritePlacesByUserId);
 

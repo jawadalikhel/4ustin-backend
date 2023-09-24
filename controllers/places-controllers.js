@@ -20,7 +20,7 @@ const fetchNearbyPlaces = async (req, res, next) => {
               filteredPlaces.push({
                 id: place.place_id,
                 name: place.name,
-                photo,
+                photo: `https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=${photo}&key=${GOOGLE_API}`,
                 rating: place.rating,
                 userRatingTotal: place.user_ratings_total,
                 address: place.formatted_address,
@@ -34,10 +34,11 @@ const fetchNearbyPlaces = async (req, res, next) => {
         }else{
           console.log("NO RESULTS FOUND IN THE API RESPONSE FOR PLACES");
         }
+        res.json({places})
       } catch (error) {
         console.log(error, "<---- error in apiServices");
       }
-      res.json({places})
+      
     };
 
     exports.fetchNearbyPlaces = fetchNearbyPlaces;

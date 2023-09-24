@@ -1,10 +1,11 @@
 const { validationResult } = require('express-validator');
-const UserFavoritePlace = require('../models/userFavoritePlace');
+const User = require('../models/user');
 const HttpError = require('../models/http-error');
 const { default: mongoose } = require('mongoose');
+const userFavoritePlace = require('../models/userFavoritePlace');
 
 // Handling the creation of a favorite place
-const createFavoritePlace = async (req, res, next) =>{
+const addFavoritePlace = async (req, res, next) =>{
     try {
         // Validating request data using express-validator
         const errors = validationResult(req);
@@ -23,8 +24,7 @@ const createFavoritePlace = async (req, res, next) =>{
             creator
         } = req.body;
 
-        // Creating and saving a new instance of UserFavoritePlace model
-        const createdFavPlace = await UserFavoritePlace.create({
+        const createdFavPlace = new userFavoritePlace({
             name,
             photo,
             rating,
@@ -32,7 +32,35 @@ const createFavoritePlace = async (req, res, next) =>{
             address,
             coordinates,
             creator
-        });
+        })
+
+        let user;
+        try {
+            user = await User.findById(creator);
+        } catch (err) {
+            const error = new HttpError(
+                'Adding to Favorite place failed, please try again', 500
+            )
+            return next(error);
+        }
+
+        // if user is not in our DB
+        if(!user){
+            const error = new HttpError('Could not find user for provided id', 404);
+            return next(error);
+        }
+
+        try {
+            const sess = await mongoose.startSession();
+            sess.startTransaction();
+            await createdFavPlace.save({session: sess});
+            user.favoritePlaces.push(createdFavPlace);
+            await user.save({session: sess});
+            await sess.commitTransaction();
+            
+        } catch (error) {
+            console.log(error, "<---- error with saving to userFavorites")
+        }
 
         // Sending a response indicating success
         res.status(201).json({ favoritePlaces: createdFavPlace });
@@ -50,9 +78,9 @@ const getFavoritePlacesByUserId = async (req, res, next) =>{
         const userId = req.params.uid; // Extracting user ID from request parameters
         
         // Finding user's favorite places in the database
-        const places = await UserFavoritePlace.find({ creator: userId });
+        const places = await userFavoritePlace.find({ creator: userId });
 
-        if (!places || places.length === 0) {
+        if (!places) {
             return next(
                 new HttpError('Cound not find OR there are no user favorites for the provided user id', 404)
             )
@@ -61,7 +89,8 @@ const getFavoritePlacesByUserId = async (req, res, next) =>{
         // Converting places to a format suitable for response and sending
         // we use the getters to make sure that the underscore from our id property is removed
         res.json({
-            places: places.map(place => place.toObject({ getters: true }))
+            favoritePlaces: places.map(place => place.toObject({ getters: true })),
+            message: "Found favorite places"
         });
     } catch (err) {
         console.error(err);
@@ -73,39 +102,28 @@ const getFavoritePlacesByUserId = async (req, res, next) =>{
 }
 
 // Deleting a favorite place
-const deleteFavoritePlace = async (req, res, next) =>{
-    try {
-        // Extracting place ID from request parameters
-        const placeId = req.params.pid;
+const deleteFavoritePlace = async (req, res, next) => {
+    const placeId = req.params.pid;
+    let place;
 
-        // Finding the place to be deleted and populating the 'creator' field
-        // populate() allows us to refer to a document stored in another Collection and to work
-        // with data in that existing document of that other collection
-        const place = await UserFavoritePlace.findById(placeId).populate('creator');
+    try {
+        // Find the place to be deleted and populate the 'creator' field
+        place = await userFavoritePlace.findById(placeId).populate('creator');
 
         if (!place) {
-            const error = new HttpError('Could not find favorite place for this id.', 404)
+            const error = new HttpError('Could not find favorite place for this id.', 404);
             return next(error);
         }
-
-        // Starting a transaction using the mongoose session
+        // Start a transaction using the mongoose session
         const sess = await mongoose.startSession();
         sess.startTransaction();
-
-        // Removing the place from the UserFavoritePlace collection
+        // Remove the place from the userFavoritePlace collection
         await place.deleteOne({ session: sess });
 
-        // Ensure the place.creator is populated and the UserFavoritePlace array is an array of ObjectIds
-        if (place.creator && Array.isArray(place.creator.UserFavoritePlace)) {
-            // Removing the place reference from the user's UserFavoritePlace array
-            const placeIndex = place.creator.UserFavoritePlace.indexOf(place._id);
-            if (placeIndex !== -1) {
-                place.creator.UserFavoritePlace.splice(placeIndex, 1);
-                await place.creator.save({ session: sess });
-            }
-        }
+        place.creator.favoritePlaces.pull(placeId);
+        await place.creator.save({ session: sess });      
 
-        // Committing the transaction
+        // Commit the transaction
         await sess.commitTransaction();
 
         // Sending a response indicating successful deletion
@@ -114,11 +132,10 @@ const deleteFavoritePlace = async (req, res, next) =>{
         console.error(err);
         return next(err);
     }
-}
-
+};
 
 
 
 exports.getFavoritePlacesByUserId = getFavoritePlacesByUserId;
-exports.createFavoritePlace = createFavoritePlace;
+exports.addFavoritePlace = addFavoritePlace;
 exports.deleteFavoritePlace = deleteFavoritePlace;

@@ -12,7 +12,7 @@ const userFavoritePlacesSchema = new Schema({
         lat: {type: Number},
         lng: {type: Number}
     },
-    creator: [{ type: mongoose.Types.ObjectId, ref: 'User' }] // Reference to User model (as an array)
+    creator: { type: mongoose.Types.ObjectId, ref: 'User' } // Reference to User model (as an array)
 })
 
 module.exports = mongoose.model('UserFavoritePlace', userFavoritePlacesSchema);

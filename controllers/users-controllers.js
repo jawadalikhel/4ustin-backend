@@ -4,14 +4,6 @@ const HttpError = require('../models/http-error')
 
 const User = require('../models/user');
 
-const DUMMY_USERS = [
-    {
-        id: 'u1',
-        username: 'Jawad Alikhel',
-        email: 'me@gmail.com',
-        password: '123456'
-    }
-]
 const getUsers = async(req, res, next) =>{
     let users;
     try {
@@ -34,7 +26,7 @@ const signup = async (req, res, next) =>{
         ) 
     }
     
-    const {username, email, password, places} = req.body;
+    const {name, email, password} = req.body;
     let existingUser;
     try {
         existingUser = await User.findOne({email: email});
@@ -55,10 +47,10 @@ const signup = async (req, res, next) =>{
 
 
     const createdUser = new User({
-        username,
+        name,
         email,
         password,
-        places
+        favoritePlaces: []
     })
 
     try {
@@ -69,7 +61,11 @@ const signup = async (req, res, next) =>{
         )
         return next(error);
     }
-    res.status(201).json({user: createdUser.toObject({getter: true})});
+    // res.status(201).json({user: createdUser.toObject({getter: true})});
+    res.status(201).json({
+        message: 'Signup succesfullly!!',
+        user: createdUser.toObject({ getters: true })
+    });
 }
 
 const login = async (req, res, next) =>{
@@ -78,7 +74,6 @@ const login = async (req, res, next) =>{
     let existingUser;
     try {
         existingUser = await User.findOne({email: email});
-        
     } catch (err) {
         const error = new HttpError(
             'Signing up faild, please try again.', 500
@@ -93,7 +88,10 @@ const login = async (req, res, next) =>{
         return next(error);
     }
 
-    res.json({message: 'Logged in succesfullly!!'});
+    res.json({
+        message: 'Logged in succesfullly!!',
+        user: existingUser.toObject({ getters: true })
+    });
 }
 
 exports.getUsers = getUsers;
