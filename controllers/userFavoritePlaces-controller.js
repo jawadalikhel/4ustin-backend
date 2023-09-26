@@ -76,7 +76,6 @@ const addFavoritePlace = async (req, res, next) =>{
 const getFavoritePlacesByUserId = async (req, res, next) =>{
     try {
         const userId = req.params.uid; // Extracting user ID from request parameters
-        
         // Finding user's favorite places in the database
         const places = await userFavoritePlace.find({ creator: userId });
 
@@ -85,6 +84,7 @@ const getFavoritePlacesByUserId = async (req, res, next) =>{
                 new HttpError('Cound not find OR there are no user favorites for the provided user id', 404)
             )
         }
+        
         // Converting places to a format suitable for response and sending
         // Converting places to a format suitable for response and sending
         // we use the getters to make sure that the underscore from our id property is removed
