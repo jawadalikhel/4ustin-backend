@@ -12,6 +12,7 @@ const fetchNearbyPlaces = async (req, res, next) => {
         // Using the "reduce" function to process each result in the API response and accumulate data.
         // filteredPlaces in reduce represents the accumulator, which is the value that is gradually built up as the function
         // iterates through the array
+
         if(response.data.results){
           places = response.data.results.reduce((filteredPlaces, place) =>{
             if(place.rating >= 3.5 && place.user_ratings_total >= 5){

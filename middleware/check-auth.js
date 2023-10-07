@@ -13,7 +13,7 @@ module.exports = (req, res, next) =>{
 
         // to verify we 1st: pass the token 2nd: pass the private key we used to generate the token in the users-controllers
         // we are validating the token 
-        const decodedToken = jwt.verify(token, 'supersecret_dont_share');
+        const decodedToken = jwt.verify(token, process.env.JWT_KEY);
         // every request will be able to user the userData object and get the userId we extracted in the middleware
         req.userData = {userId: decodedToken.userId};
         next();

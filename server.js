@@ -39,7 +39,8 @@ app.use((error, req, res, next) =>{
     res.json({message: error.message || 'An unknown error occured!'});
 });
 
-const url = process.env.mongodbConnectionString;
+// const url = process.env.mongodbConnectionString;
+const url = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@4ustin-cluster.cdmdgjq.mongodb.net/${process.env.DB_NAME}?retryWrites=true&w=majority`
 const PORT = 5000;
 mongoose
     .connect(url, 

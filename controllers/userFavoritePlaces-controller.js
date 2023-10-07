@@ -21,7 +21,6 @@ const addFavoritePlace = async (req, res, next) =>{
             userRatingTotal,
             address,
             coordinates,
-            creator
         } = req.body;
 
         const createdFavPlace = new userFavoritePlace({
@@ -31,12 +30,12 @@ const addFavoritePlace = async (req, res, next) =>{
             userRatingTotal,
             address,
             coordinates,
-            creator
+            creator: req.userData.userId
         })
 
         let user;
         try {
-            user = await User.findById(creator);
+            user = await User.findById(req.userData.userId);
         } catch (err) {
             const error = new HttpError(
                 'Adding to Favorite place failed, please try again', 500
@@ -85,7 +84,12 @@ const getFavoritePlacesByUserId = async (req, res, next) =>{
             )
         }
         
-        // Converting places to a format suitable for response and sending
+        if(userId !== req.userData.userId){
+            const error = new HttpError(
+                'You are not AUTHORIZED to see Favorite places', 401
+            )
+        }
+
         // Converting places to a format suitable for response and sending
         // we use the getters to make sure that the underscore from our id property is removed
         res.json({
@@ -114,6 +118,13 @@ const deleteFavoritePlace = async (req, res, next) => {
             const error = new HttpError('Could not find favorite place for this id.', 404);
             return next(error);
         }
+
+        if(place.creator.id !== req.userData.userId){
+            const error = new HttpError(
+                'You are not AUTHORIZED to delete Favorite places', 401
+            )
+        }
+
         // Start a transaction using the mongoose session
         const sess = await mongoose.startSession();
         sess.startTransaction();
