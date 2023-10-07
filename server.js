@@ -41,12 +41,12 @@ app.use((error, req, res, next) =>{
 
 // const url = process.env.mongodbConnectionString;
 const url = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@4ustin-cluster.cdmdgjq.mongodb.net/${process.env.DB_NAME}?retryWrites=true&w=majority`
-const PORT = 5000;
+
 mongoose
     .connect(url, 
         { useNewUrlParser: true, useUnifiedTopology: true }
     )
     .then(() => {
-        app.listen(PORT, () => console.log("Server up and running, Connected to DB"));
+        app.listen(process.env.PORT || 5000, () => console.log("Server up and running, Connected to DB"));
     })
-    .catch((error) => console.log(error))
+    .catch((error) => console.log(error.message + " OR change the start: node server.js to ----> start: nodemon server.js in package.json if running locally"))
